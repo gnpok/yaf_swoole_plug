@@ -1,0 +1,16 @@
+{
+    "name": "gnp/yaf_swoole_plug",
+    "description": "swoole_web_server结合yaf实现高效api接口",
+    "type": "library",
+    "require": {
+        "catfan/medoo": "^1.4"
+    },
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "gnp",
+            "email": "742926717@qq.com"
+        }
+    ],
+    "minimum-stability": "stable"
+}
