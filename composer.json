@@ -9,13 +9,13 @@
     "authors": [
         {
             "name": "gnp",
-            "email": "742926717@qq.com"
+            "email": "gnpok@qq.com"
         }
     ],
     "minimum-stability": "stable",
     "autoload": {
         "psr-4": {
-            "SwoolePlug\\": "/src"
+            "Ysp\\": "src"
         }
     }
 }
