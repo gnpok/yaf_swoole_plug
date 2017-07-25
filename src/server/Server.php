@@ -28,9 +28,6 @@ class Server
 
         $config = new \Yaf_Config_Ini(CONF_PATH. 'swoole.ini',$this->environment);
         $configArr = $config->toArray();
-        function p($arr){
-            echo "<pre>",print_r($arr),"</pre>";
-        }
         $config = $configArr['swoole'];
         extract($config);
 
@@ -63,20 +60,22 @@ class Server
             $self::$rawContent = $request->rawContent();
             $self::$http       = $http;
 
+            ob_start();
             try {
                 $yaf_request = new \Yaf_Request_Http($request->server['request_uri']);
-                $yaf_response = $this->application->getDispatcher()->dispatch($yaf_request);
-                $json_result = $yaf_response->getBody();
-            } catch (\Exception $e) {
-                $result = array();
-                $result['code'] = $e->getCode();
-                $result['msg'] = $e->getMessage();
-                $json_result = json_encode($result);
+                $this->application->getDispatcher()->dispatch($yaf_request);
+            } catch (\Yaf_Exception $e ) {
+                var_dump( $e );
             }
-            $response->header('Content-Type', 'application/json; charset=utf-8');
-            $response->end($json_result);
-        });
 
+            $result = ob_get_contents();
+            ob_end_clean();
+            // add Header
+            $response->header('Content-Type', 'application/json; charset=utf-8');
+            // add cookies
+            // set status
+            $response->end($result);
+        });
         $http->start();
     }
 
