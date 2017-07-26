@@ -3,7 +3,7 @@
 ## 为什么写这个
 参照了 [LinkedDestiny](https://github.com/LinkedDestiny/swoole-yaf)   [xuebingwang](https://github.com/xuebingwang/xbw-swoole-yaf) ，觉得太裸露，就决定用composer形式来写，同时也是一种锻炼
 
-还望大家多提意见想法，共同完善
+程序我会在应用中进一步完善，同时希望大家给点意见
 
 ## 如何使用
 
@@ -52,4 +52,7 @@ hello world
 ```
 
 ## 3.与nginx结合
+[参考我另一个项目中的说明](https://github.com/gnpok/yafApi)
+
+## 4.swoole的异步任务
 [参考我另一个项目中的说明](https://github.com/gnpok/yafApi)
