@@ -1,9 +1,16 @@
 # yaf结合swoole httpserver写的api接口
 
+## 为什么写这个
+参照了 [LinkedDestiny](https://github.com/LinkedDestiny/swoole-yaf)   [xuebingwang](https://github.com/xuebingwang/xbw-swoole-yaf) ，觉得太裸露，就决定用composer形式来写，同时也是一种锻炼
+
+还望大家多提意见想法，共同完善
 
 ## 如何使用
 
-### 使用composer安装
+### 1.生成yaf框架
+[生成yaf框架](https://github.com/laruence/yaf/tree/master/tools/cg)
+
+### 2.使用composer安装
 
 在yaf框架根目录下面使用命令行输入
 ```
@@ -31,5 +38,18 @@ if (PHP_SAPI === 'cli'){
 	$application->bootstrap()->run();
 }
 
-
+//为了方便，我封装了get和post方法，存放在src/common/function.php
+将代码拷贝出来，放入框架中去
 ```
+
+启动服务
+```php
+//进入yaf框架入口文件对应目录，在命令行模式下输入
+php index.php
+
+//打开浏览器，输入localhost:9501
+hello world
+```
+
+## 3.与nginx结合
+[参考我另一个项目中的说明](https://github.com/gnpok/yafApi)

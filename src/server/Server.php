@@ -40,7 +40,7 @@ class Server
             'open_tcp_nodelay'          => $open_tcp_nodelay,
             'open_tcp_keepalive'        => '',
             'tcp_defer_accept'          => '',
-            'log_file'                  => ROOT_PATH.'/logs/swoole_http_server.log',
+            // 'log_file'                  => ROOT_PATH.'/logs/swoole_http_server.log',
         ));
 
         $http->on('WorkerStart', array($this, 'onWorkerStart'));
@@ -83,6 +83,10 @@ class Server
     {
         if(!defined('APPLICATION_PATH')){
             echo 'APPLICATION_PATH未定义';
+            return false;
+        }
+        if(!is_dir(APPLICATION_PATH.'/application')){
+            echo 'application 文件夹不存在';
             return false;
         }
         define('APP_PATH', APPLICATION_PATH . '/application/');
