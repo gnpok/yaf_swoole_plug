@@ -1,12 +1,11 @@
 <?php
 namespace Ysp\server;
+use Ysp\conf\Config;
 /**
  * swoole实现yaf的web_server
  */
 
-define ('DS', DIRECTORY_SEPARATOR);
-define ('ROOT_PATH', realpath(dirname(__FILE__) . '/../'));
-define ('CONF_PATH', dirname(__FILE__).'/../conf/');
+
 
 class Server
 {
@@ -21,37 +20,27 @@ class Server
     private $application;
     private $environment = 'product'; //product OR develop
 
-    private function __construct()
+    private function __construct($conf = array())
     {
-        define('IS_SWOOLE', TRUE);
-        define('HTTP_SERVER',__CLASS__);
+        define ('IS_SWOOLE', TRUE);
+        define ('HTTP_SERVER',__CLASS__);
 
-        $config = new \Yaf_Config_Ini(CONF_PATH. 'swoole.ini',$this->environment);
-        $configArr = $config->toArray();
-        $config = $configArr['swoole'];
-        extract($config);
 
-        $http = new \swoole_http_server($host, $port);
-        $http->set(array(
-            'worker_num'                => $worker_num,         //worker进程数
-            'task_worker_num'           => $task_worker_num,    //task_worker进程数
-            'daemonize'                 => $daemonize,
-            'dispatch_mode'             => $dispatch_mode,
-            'open_tcp_nodelay'          => $open_tcp_nodelay,
-            'open_tcp_keepalive'        => '',
-            'tcp_defer_accept'          => '',
-            // 'log_file'                  => ROOT_PATH.'/logs/swoole_http_server.log',
-        ));
+        $config = array_merge(Config::getConfig(),$conf);
+        $http = new \swoole_http_server($config['host'],$config['port']);
+        unset($config['host']);
+        unset($config['port']);
+        $http->set($config);
 
         $http->on('WorkerStart', array($this, 'onWorkerStart'));
         $http->on('task', array($this, 'onTask'));
         $http->on('finish', array($this, 'onFinish'));
-
         $http->on('request', function ($request, $response) use($http) {
             //请求过滤,会请求2次
             if(in_array('/favicon.ico', [$request->server['path_info'],$request->server['request_uri']])){
                 return $response->end();
             }
+
             $self = HTTP_SERVER;
             $self::$header     = isset($request->header)   ? $request->header  : [];
             $self::$get        = isset($request->get)      ? $request->get     : [];
@@ -64,31 +53,36 @@ class Server
             try {
                 $yaf_request = new \Yaf_Request_Http($request->server['request_uri']);
                 $this->application->getDispatcher()->dispatch($yaf_request);
+                $result = ob_get_contents();
             } catch (\Yaf_Exception $e ) {
-                var_dump( $e );
+                $result = $e->getMessage();
             }
-
-            $result = ob_get_contents();
             ob_end_clean();
             // add Header
             $response->header('Content-Type', 'application/json; charset=utf-8');
             // add cookies
             // set status
             $response->end($result);
+
         });
         $http->start();
     }
 
+
     public function onWorkerStart($serv, $worker_id)
     {
+        $errorMsg = array();
         if(!defined('APPLICATION_PATH')){
-            echo 'APPLICATION_PATH未定义';
-            return false;
+            $errorMsg[] = 'APPLICATION_PATH未定义';
         }
         if(!is_dir(APPLICATION_PATH.'/application')){
-            echo 'application 文件夹不存在';
-            return false;
+            $errorMsg[] = 'application 文件夹不存在';
         }
+        if(!empty($errorMsg)){
+            var_dump($errorMsg);
+            exit();
+        }
+
         define('APP_PATH', APPLICATION_PATH . '/application/');
 
         //错误信息将写入swoole日志中
@@ -101,18 +95,17 @@ class Server
         $this->application = $application;
         $this->application->bootstrap();
 
-        if ($worker_id >= $serv->setting['worker_num']) {
-            //cli_set_process_title("swoolehttp:task_worker");
-        } else {
-            //cli_set_process_title("swoolehttp:worker");
-        }
+        // if ($worker_id >= $serv->setting['worker_num']) {
+        //     cli_set_process_title("swoolehttp:task_worker");
+        // } else {
+        //     cli_set_process_title("swoolehttp:worker");
+        // }
     }
 
     public function onTask($serv, $taskId, $fromId, array $taskdata)
     {
         echo "新的异步任务[来自进程 {$fromId}，当前进程 {$taskId}],data:".json_encode($taskdata).PHP_EOL;
         //$task = TaskLibrary::createTask($taskdata);
-//        var_dump($task);
     }
 
     public function onFinish($serv, $taskId, $data)
@@ -120,10 +113,10 @@ class Server
         # code...
     }
 
-    public static function getInstance()
+    public static function getInstance($config = array())
     {
         if (!self::$instance) {
-            self::$instance = new self();
+            self::$instance = new self($config);
         }
         return self::$instance;
     }

@@ -7,7 +7,7 @@ use Ysp\server\Server;
 
 class Entry{
 
-    public static function startServer(){
-       Server::getInstance();
+    public static function startServer($config = array()){
+       Server::getInstance($config);
     }
 }
